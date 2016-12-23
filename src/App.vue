@@ -174,7 +174,7 @@
         },
         // Add or Remove score points, based on movement.
         updateScore: function (amount) {
-            this.session.scores.score += this.session.scores.score
+            this.session.scores.score += amount
         },
         // Increment Move Counter
         touchMovesCounter: function () {
