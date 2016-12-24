@@ -4,20 +4,20 @@
             <div class="container">
                 <ul class="spots-row">
                     <li class="spot-container">
-                        <spot flipped="0" number="1" :cards="session.spots[1]"></spot>
+                        <spot :cards="session.spots[1]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="0" number="2" :cards="session.spots[2]"></spot>
+                        <spot :cards="session.spots[2]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="0" number="3" :cards="session.spots[3]"></spot>
+                        <spot :cards="session.spots[3]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="0" number="4" :cards="session.spots[4]"></spot>
+                        <spot :cards="session.spots[4]"></spot>
                     </li>
                 </ul>
                 <div id="well">
-                    <spot flipped="16" number="13" :cards="session.spots[13]"></spot>
+                    <spot :cards="session.spots[13]"></spot>
                 </div>
                 <div id="buttons">
                     <button @click="newGame()">New Game</button>
@@ -31,28 +31,28 @@
             <div class="container">
                 <ul class="spots-row">
                     <li class="spot-container">
-                        <spot flipped="0" number="5" :cards="session.spots[5]"></spot>
+                        <spot :cards="session.spots[5]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="1" number="6" :cards="session.spots[6]"></spot>
+                        <spot :cards="session.spots[6]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="2" number="7" :cards="session.spots[7]"></spot>
+                        <spot :cards="session.spots[7]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="3" number="8" :cards="session.spots[8]"></spot>
+                        <spot :cards="session.spots[8]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="4" number="9" :cards="session.spots[9]"></spot>
+                        <spot :cards="session.spots[9]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="5" number="10" :cards="session.spots[10]"></spot>
+                        <spot :cards="session.spots[10]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="6" number="11" :cards="session.spots[11]"></spot>
+                        <spot :cards="session.spots[11]"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot flipped="7" number="12" :cards="session.spots[12]"></spot>
+                        <spot :cards="session.spots[12]"></spot>
                     </li>
                 </ul>
             </div>
