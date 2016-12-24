@@ -32,7 +32,7 @@
         components:{
                 Card
         },
-        props: ['number','flipped','cards'],
+        props: ['cards'],
         methods: {
 
         }
