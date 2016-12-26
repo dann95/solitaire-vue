@@ -14,6 +14,11 @@
 
             }
         },
+        methods: {
+          handleDrop: function() {
+
+          }
+        },
         props:['instance']
     }
 </script>

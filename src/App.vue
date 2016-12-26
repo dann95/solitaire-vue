@@ -4,20 +4,20 @@
             <div class="container">
                 <ul class="spots-row">
                     <li class="spot-container">
-                        <spot :cards="session.spots[1]"></spot>
+                        <spot :cards="session.spots[1]" number="1"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[2]"></spot>
+                        <spot :cards="session.spots[2]" number="2"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[3]"></spot>
+                        <spot :cards="session.spots[3]" number="3"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[4]"></spot>
+                        <spot :cards="session.spots[4]" number="4"></spot>
                     </li>
                 </ul>
                 <div id="well">
-                    <spot :cards="session.spots[13]"></spot>
+                    <spot :cards="session.spots[13]" number="13"></spot>
                 </div>
                 <div id="buttons">
                     <button @click="newGame()">New Game</button>
@@ -31,28 +31,28 @@
             <div class="container">
                 <ul class="spots-row">
                     <li class="spot-container">
-                        <spot :cards="session.spots[5]"></spot>
+                        <spot :cards="session.spots[5]" number="5"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[6]"></spot>
+                        <spot :cards="session.spots[6]" number="6"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[7]"></spot>
+                        <spot :cards="session.spots[7]" number="7"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[8]"></spot>
+                        <spot :cards="session.spots[8]" number="8"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[9]"></spot>
+                        <spot :cards="session.spots[9]" number="9"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[10]"></spot>
+                        <spot :cards="session.spots[10]" number="10"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[11]"></spot>
+                        <spot :cards="session.spots[11]" number="11"></spot>
                     </li>
                     <li class="spot-container">
-                        <spot :cards="session.spots[12]"></spot>
+                        <spot :cards="session.spots[12]" number="12"></spot>
                     </li>
                 </ul>
             </div>
@@ -67,58 +67,18 @@
         components: {
             Spot
     },
+    mounted: function () {
+        // bind this to private scope
+        var that = this
+        // when Any spot broadcasts a movement, we catch it.
+        window.Event.$on('movement', function (movement) {
+            var move = that.injectSpotsToMovement(movement)
+            that.tryMoveCard(move)
+        })
+    },
     data: function () {
         return {
             defaults: {
-                rules: {
-                    well: [
-                        function (from, to) {
-                            return false
-                        }
-                    ],
-                    suitDecks: [
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        },
-                        function (from, to) {
-
-                        }
-                    ],
-                    decks: [
-                        // Destine deck is empty
-                        // Different Color
-                        function (from, to) {
-                            return from.card.suit.color != to.card.suit.color
-                        },
-                        // Origin card is not Flipped
-                        function (from, to) {
-                            return ! from.card.flipped
-                        },
-                        // Destine card is not Flipped
-                        function (from, to) {
-                            return ! to.card.flipped
-                        },
-                        // Origin card is lower than Destine
-                        function (from, to) {
-                            return from.card.entity.number < to.card.entity.number
-                        }
-                    ]
-                },
                 cards: {
                     entities: [{rep:'A', number:1}, {rep:'2', number:2}, {rep:'3', number:3}, {rep:'4', number:4}, {rep:'5', number:5}, {rep:'6', number:6}, {rep:'7', number:7}, {rep:'8', number:8}, {rep:'9', number:9}, {rep:'10', number:10}, {rep:'J', number:11}, {rep:'Q', number:12}, {rep:'K', number:13}],
                     suits: [{rep: '♠', color: 'black', name: 'spades'}, {rep: '♥', color: 'red', name: 'hearts'}, {rep: '♦', color: 'red', name: 'diams'}, {rep: '♣', color: 'black', name: 'clubs'}],
@@ -157,20 +117,64 @@
       },
       methods: {
         // Called when user try to move a card.
-        tryMoveCard: function () {
-
+        tryMoveCard: function (movement) {
+          // check if is valid movement
+          if(this.isPossibleMovement(movement)){
+            // apply movement
+            this.makeMovement(movement)
+          }
         },
         // Try Apply rules to catch if movement is possible
-        isPossibleMovement: function (from, to) {
-
+        isPossibleMovement: function (movement) {
+          var rules = this.getRulesForSpot(movement.to.deck.number)
+          rules = rules.map(function(r){ return r(movement) })
+          return ! (rules.indexOf(false) > -1)
+        },
+        // get rules array of functions to specific Destination spot.
+        getRulesForSpot: function (number) {
+            return this.rules()[this.defaults.spots.rules.movement[number]]
+        },
+        // get rules for game.
+        rules: function () {
+          return {
+              well: [
+                  function (movement) {
+                      return false
+                  }
+              ],
+              suitDecks: [],
+              decks: [
+                  // Destine deck is empty or Destine Card is not Flipped
+                  function (movement) {
+                      return (movement.to.deck.bag.length == 0) || (movement.to.deck.bag[0].flipped == false)
+                  },
+                  // Different Color
+                  function (movement) {
+                      return movement.to.deck.bag[0].suit.color != movement.card.suit.color
+                  },
+                  // Origin card is not Flipped
+                  function (movement) {
+                      return movement.card.flipped != true
+                  },
+                  // Origin card is lower than Destine
+                  function (movement) {
+                      return (movement.to.deck.bag.length == 0) || ( (movement.card.entity.number+1) == movement.to.deck.bag[0].entity.number)
+                  }
+              ]
+          }
         },
         // Move cards from a spot to another
-        makeMovement: function (from, to) {
+        makeMovement: function (movement) {
+          //@TODO know if card is top from stack, if not know if below cards are sequence, and move all.
+          // make movement
+          this.session.spots[movement.to.deck.number].unshift(movement.card)
+          this.session.spots[movement.from.deck.number].splice(0,1)
+          // increase movement Counter
+          this.touchMovesCounter()
+          // increase score
+          this.updateScore(100)
 
-        },
-        // Returns a object with from,to with card and deck infos.
-        generateMovementObj: function () {
-
+          // Apply routine after each movement
         },
         // Add or Remove score points, based on movement.
         updateScore: function (amount) {
@@ -235,6 +239,26 @@
                     that.session.spots[index][w-1].flipped = false
                 }
             })
+        },
+        // add From and To spot arrays for apply rules.
+        injectSpotsToMovement: function (m) {
+            var from = m.from
+            var to = m.to
+            return {
+                from: {
+                  deck: {
+                    bag: this.session.spots[from],
+                    number: from
+                  }
+                },
+                to: {
+                  deck: {
+                    bag: this.session.spots[to],
+                    number: to
+                  }
+                },
+                card: m.card
+            }
         }
       }
     }

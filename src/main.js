@@ -3,7 +3,7 @@
 import Vue from 'vue'
 import App from './App'
 
-/* eslint-disable no-new */
+// set draggable plugin for vue.
 
 window.Event = new Vue()
 
