@@ -595,9 +595,11 @@
     transform: translate(-3.5em, 2.8em) rotate(66deg);
 }
 
+/*.playingCards ul.deck li { position: relative;}*/
+
 /* deck */
 .playingCards ul.deck li:nth-child(1)  { left: 0;    bottom: 0; }
-.playingCards ul.deck li:nth-child(2)  { left: 2px;  bottom: 1px; }
+.playingCards ul.deck li:nth-child(2)  { left: 1px;  bottom: 2px; }
 .playingCards ul.deck li:nth-child(3)  { left: 4px;  bottom: 2px; }
 .playingCards ul.deck li:nth-child(4)  { left: 6px;  bottom: 3px; }
 .playingCards ul.deck li:nth-child(5)  { left: 8px;  bottom: 4px; }

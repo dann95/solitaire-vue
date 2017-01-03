@@ -59,7 +59,6 @@
         </div>
     </div>
 </template>
-
 <script>
     import Spot from './components/Spot'
     export default {
@@ -86,11 +85,7 @@
                 spots: {
                     rules: {
                         begins: [0,0,0,0,1,2,3,4,5,6,7,8,16],
-                        beginsUnflipped: [0,0,0,0,1,1,1,1,1,1,1,1,0],
                         movement: ['suitDecks','suitDecks','suitDecks','suitDecks','decks','decks','decks','decks','decks','decks','decks','decks','well']
-                    },
-                    spots: {
-                        1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[], 8:[], 9:[], 10:[], 11:[], 12:[], 13:[]
                     },
                     scores: {
                         moves: 0,
@@ -119,16 +114,17 @@
         // Called when user try to move a card.
         tryMoveCard: function (movement) {
           // check if is valid movement
-          if(this.isPossibleMovement(movement)){
-            // apply movement
-            this.makeMovement(movement)
-          }
+            if(this.isPossibleMovement(movement)){
+              // apply movement
+              this.makeMovement(movement)
+            }
         },
         // Try Apply rules to catch if movement is possible
         isPossibleMovement: function (movement) {
-          var rules = this.getRulesForSpot(movement.to.deck.number)
-          rules = rules.map(function(r){ return r(movement) })
-          return ! (rules.indexOf(false) > -1)
+            var rules = this.getRulesForSpot(movement.to.deck.number)
+            rules = rules.map(function(r){ return r(movement) })
+            // console.log(rules)
+            return ! (rules.indexOf(false) > -1)
         },
         // get rules array of functions to specific Destination spot.
         getRulesForSpot: function (number) {
@@ -136,21 +132,21 @@
         },
         // get rules for game.
         rules: function () {
-          return {
-              well: [
-                  function (movement) {
-                      return false
-                  }
-              ],
+            return {
+                well: [
+                    function (movement) {
+                        return false
+                      }
+                  ],
               suitDecks: [],
               decks: [
                   // Destine deck is empty or Destine Card is not Flipped
                   function (movement) {
-                      return (movement.to.deck.bag.length == 0) || (movement.to.deck.bag[0].flipped == false)
+                      return (movement.to.deck.bag.length == 0) || (movement.to.deck.bag[movement.to.deck.bag.length-1].flipped == false)
                   },
                   // Different Color
                   function (movement) {
-                      return movement.to.deck.bag[0].suit.color != movement.card.suit.color
+                      return movement.to.deck.bag[movement.to.deck.bag.length-1].suit.color != movement.card.suit.color
                   },
                   // Origin card is not Flipped
                   function (movement) {
@@ -158,7 +154,7 @@
                   },
                   // Origin card is lower than Destine
                   function (movement) {
-                      return (movement.to.deck.bag.length == 0) || ( (movement.card.entity.number+1) == movement.to.deck.bag[0].entity.number)
+                      return (movement.to.deck.bag.length == 0) || ( (movement.card.entity.number+1) == movement.to.deck.bag[movement.to.deck.bag.length-1].entity.number)
                   }
               ]
           }
@@ -167,7 +163,7 @@
         makeMovement: function (movement) {
           //@TODO know if card is top from stack, if not know if below cards are sequence, and move all.
           // make movement
-          this.session.spots[movement.to.deck.number].unshift(movement.card)
+          this.session.spots[movement.to.deck.number].shift(movement.card)
           this.session.spots[movement.from.deck.number].splice(0,1)
           // increase movement Counter
           this.touchMovesCounter()
@@ -232,13 +228,9 @@
         },
         // Unflip cards from decks to start game.
         unflipCardsFromSpots: function () {
-            var that = this
-            this.defaults.spots.rules.beginsUnflipped.forEach(function(item, key){
-                var index = key+1
-                for (var w = 1; w <= item; w++){
-                    that.session.spots[index][w-1].flipped = false
-                }
-            })
+            for(var i = 5; i <= 12; i++){
+              this.session.spots[i][(this.session.spots[i].length-1)].flipped = false
+            }
         },
         // add From and To spot arrays for apply rules.
         injectSpotsToMovement: function (m) {
@@ -263,7 +255,6 @@
       }
     }
 </script>
-
 <style>
     body{
         background-image:url(http://www.photoshopbuzz.com/wp-content/uploads/2013/06/woodtexture5.jpg);
