@@ -71,7 +71,7 @@
         var that = this
         // when Any spot broadcasts a movement, we catch it.
         window.Event.$on('movement', function (movement) {
-            var move = that.injectSpotsToMovement(movement)
+            var move = that.identifyMovement(movement)
             that.tryMoveCard(move)
         })
     },
@@ -114,6 +114,7 @@
         // Called when user try to move a card.
         tryMoveCard: function (movement) {
           // check if is valid movement
+            // console.log(movement)
             if(this.isPossibleMovement(movement)){
               // apply movement
               this.makeMovement(movement)
@@ -123,54 +124,87 @@
         isPossibleMovement: function (movement) {
             var rules = this.getRulesForSpot(movement.to.deck.number)
             rules = rules.map(function(r){ return r(movement) })
-            // console.log(rules)
             return ! (rules.indexOf(false) > -1)
         },
         // get rules array of functions to specific Destination spot.
         getRulesForSpot: function (number) {
-            return this.rules()[this.defaults.spots.rules.movement[number]]
+            // console.log(number,this.rules(),this.defaults.spots.rules.movement[number - 1])
+            return this.rules()[this.defaults.spots.rules.movement[number - 1]]
         },
         // get rules for game.
         rules: function () {
             return {
                 well: [
-                    function (movement) {
+                    function ( movement ) {
                         return false
                       }
                   ],
-              suitDecks: [],
+              suitDecks: [
+                  // Deck is empty, and card is A, or Origin card is one bigger than spot card and same suit.
+                  function ( movement ) {
+                      return (movement.to.deck.hasCards) ? (movement.to.deck.bag.slice(-1)[0].entity.number == (movement.card.entity.number - 1) && movement.to.deck.bag.slice(-1)[0].suit.name == movement.card.suit.name) : movement.card.entity.number == 1
+                  }
+              ],
               decks: [
-                  // Destine deck is empty or Destine Card is not Flipped
-                  function (movement) {
-                      return (movement.to.deck.bag.length == 0) || (movement.to.deck.bag[movement.to.deck.bag.length-1].flipped == false)
-                  },
-                  // Different Color
-                  function (movement) {
-                      return movement.to.deck.bag[movement.to.deck.bag.length-1].suit.color != movement.card.suit.color
-                  },
                   // Origin card is not Flipped
-                  function (movement) {
-                      return movement.card.flipped != true
+                  function ( movement ) {
+                      return ! movement.card.flipped
                   },
-                  // Origin card is lower than Destine
-                  function (movement) {
-                      return (movement.to.deck.bag.length == 0) || ( (movement.card.entity.number+1) == movement.to.deck.bag[movement.to.deck.bag.length-1].entity.number)
+                  // Destine deck is empty, or last card is 1 number bigger than origin card
+                  function ( movement ) {
+                      return ! (movement.to.deck.hasCards) || (movement.to.deck.bag.slice(-1)[0].entity.number - 1) == movement.card.entity.number
+                  },
+                  // Destine deck is empty, or last card is Different color of origin card
+                  function ( movement ) {
+                      return ! (movement.to.deck.hasCards) || movement.to.deck.bag.slice(-1)[0].suit.color != movement.card.suit.color
+                  },
+                  // Destine deck is empty, or last card is not flipped
+                  function ( movement ) {
+                      return ! (movement.to.deck.hasCards) || ! movement.to.deck.bag.slice(-1)[0].flipped
+                  },
+                  // Destine deck is empty and origin card is a K
+                  function ( movement ) {
+                    return (movement.to.deck.hasCards) ? true : movement.card.entity.number == 13
+                  },
+                  // Origin card is last card, or have a correct sequence.
+                  function ( movement ) {
+                      return movement.from.isLastCard || ! (movement.from.deck.bag.slice(movement.from.cardIndex).map(function(c) { return c.flipped }).indexOf(true) > -1)
                   }
               ]
           }
         },
         // Move cards from a spot to another
         makeMovement: function (movement) {
-          //@TODO know if card is top from stack, if not know if below cards are sequence, and move all.
-          // make movement
-          this.session.spots[movement.to.deck.number].shift(movement.card)
-          this.session.spots[movement.from.deck.number].splice(0,1)
-          // increase movement Counter
-          this.touchMovesCounter()
-          // increase score
-          this.updateScore(100)
-
-          // Apply routine after each movement
+            if(movement.from.isLastCard){
+                this.session.spots[movement.to.deck.number].push(movement.card)
+                this.session.spots[movement.from.deck.number].pop()
+            }else{
+                var list = movement.from.deck.bag.slice(movement.from.cardIndex)
+                var that = this
+                list.forEach(function (card) {
+                    that.session.spots[movement.to.deck.number].push(card)
+                    that.session.spots[movement.from.deck.number].pop()
+                })
+            }
+            // increase movement Counter
+            this.touchMovesCounter()
+            // increase score
+            this.updateScore(100)
+            // Apply routine after each movement
+            this.movementRoutine()
+        },
+        movementRoutine: function () {
+            // unflip top cards if flipped
+            this.unflipRoutine()
+        },
+        unflipRoutine: function () {
+            // Is there any flipped card on spots 5~12?
+            for(var s = 5; s <= 12; s++){
+                var spot = this.session.spots[s]
+                if (spot.length && spot.slice(-1)[0].flipped){
+                    this.session.spots[s][(this.session.spots[s].length - 1)].flipped = false
+                }
+            }
         },
         // Add or Remove score points, based on movement.
         updateScore: function (amount) {
@@ -219,7 +253,7 @@
         },
         // Sorts a deck with (4 suits)
         randomizeCards: function (cards) {
-            for(var x = 1; x < 100; x++){
+            for(var x = 1; x < 999; x++){
                 cards.sort(function(){
                     return .5 - Math.random()
                 })
@@ -233,23 +267,26 @@
             }
         },
         // add From and To spot arrays for apply rules.
-        injectSpotsToMovement: function (m) {
+        identifyMovement: function (m) {
             var from = m.from
             var to = m.to
             return {
                 from: {
-                  deck: {
-                    bag: this.session.spots[from],
-                    number: from
-                  }
+                    isLastCard: (m.index == (this.session.spots[from].length - 1)),
+                    cardIndex: m.index,
+                    deck: {
+                        number: from,
+                        bag: this.session.spots[from]
+                    }
                 },
                 to: {
-                  deck: {
-                    bag: this.session.spots[to],
-                    number: to
-                  }
+                    deck: {
+                        hasCards: (this.session.spots[to].length > 0),
+                        number: to,
+                        bag: this.session.spots[to]
+                    }
                 },
-                card: m.card
+                card: this.session.spots[from][m.index]
             }
         }
       }

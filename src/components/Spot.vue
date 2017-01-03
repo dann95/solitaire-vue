@@ -1,8 +1,6 @@
 <template>
     <div id="container">
-          <draggable :list="cards" :options="{group:'solitaire'}" :move="move" @end="moveCard" :id="'spot-'+number" class="draggableArea">
-            <!-- <card v-for="card in cards" :instance="card"></card> -->
-          <ul>
+          <draggable :list="cards" :options="{group:'solitaire'}" :move="move" @end="moveCard" :id="'spot-'+number" class="draggableArea" element="ul">
             <template v-for="(card, index) in cards">
               <li class="card back" v-if="card.flipped" :id="index">*</li>
               <li class="card rank-7" :class="card.suit.name" v-else :id="index" :key="index">
@@ -10,7 +8,7 @@
                   <span class="suit" v-text="card.suit.rep"></span>
               </li>
             </template>
-          </ul>
+            <br class="emptyMin">
           </draggable>
     </div>
 </template>
@@ -43,11 +41,12 @@
     #container ul li:nth-child(9)  { left: 0;    top: -680px; z-index: 607;}
     #container ul li:nth-child(10)  { left: 0;    top: -765px; z-index: 608;}
     #container ul li:nth-child(11)  { left: 0;    top: -850px; z-index: 609;}
-
+    .emptyMin {
+        line-height:200px;
+    }
     .draggableArea {
-      min-height: 100px;
-      min-width: 100px;
-      border:2px solid rgb(255,133,100);
+      min-width: 90px;
+      border:2px solid purple;
     }
 </style>
 <script>
@@ -59,7 +58,7 @@
             return{
               from: null,
               to: null,
-              card: null
+              cardIndex: null
             }
         },
         components:{
@@ -72,16 +71,15 @@
             this.resetFromTo()
           },
           move: function (event) {
-            // console.log(event)
+            // console.log(event.dragged.id)
             this.from = this.detectSpotNumber(event.from.id)
             this.to = this.detectSpotNumber(event.to.id)
-            this.card = event.draggedContext.element
+            this.cardIndex = event.dragged.id
             return false
           },
           generateMovementInstructions: function (event) {
-            // console.log(this.card)
             return {
-              card: this.card,
+              index: this.cardIndex,
               from: this.from,
               to: this.to
             }
