@@ -1,28 +1,56 @@
 <template>
     <div id="container">
-          <draggable :list="cards" :options="{group:'solitaire'}" :move="move" @end="moveCard" :id="'spot-'+number" class="draggableArea" element="ul" :class="{'wellAlign': 'number == 13' }">
-              <div v-if="number == 13" id="showcase">
-                <template v-for="(card,index) in well.currents">
-                    <li class="card rank-7 wellAlign" :class="card.suit.name" :id="index" :key="index">
+          <template v-if="number == 13">
+              <ul>
+                  <li v-for="card in cards" class="card rank-7 back" @click="onWellClick">*</li>
+              </ul>
+              <draggable
+              :list="visibleWellCards"
+              element="ul"
+              :options="{group: 'solitaire'}"
+              :move="move"
+              @end="moveCard"
+              class="draggableArea"
+              :id="'spot-' + number"
+              >
+                  <li
+                  v-for="card in visibleWellCards"
+                  class="card rank-7"
+                  :class="card.suit.name"
+                  :id="well.current">
+                      <span class="rank" v-text="card.entity.rep"></span>
+                      <span class="suit" v-text="card.suit.rep"></span>
+                  </li>
+                  <br class="emptyMin">
+              </draggable>
+          </template>
+          <template v-else>
+              <draggable
+              :list="cards"
+              :options="{group: 'solitaire'}"
+              :move="move"
+              @end="moveCard"
+              element="ul"
+              class="draggableArea"
+              :id="'spot-' + number">
+                <template v-for="(card, index) in cards">
+                    <li
+                    v-if="card.flipped"
+                    class="card back deckAlign">*</li>
+                    <li
+                    v-else
+                    class="card rank-7 deckAlign"
+                    :class="card.suit.name"
+                    :id="index"
+                    :key="index"
+                    >
                         <span class="rank" v-text="card.entity.rep"></span>
                         <span class="suit" v-text="card.suit.rep"></span>
                     </li>
                 </template>
-                <button v-if="number == 13 && cards.length > 0" @click="onWellClick">ask card</button>
-              </div>
-            <template v-for="(card, index) in cards" v-if="number != 13">
-              <li class="card back deckAlign" v-if="card.flipped" :id="index">*</li>
-              <li class="card rank-7 deckAlign" :class="card.suit.name" v-else :id="index" :key="index">
-                  <span class="rank" v-text="card.entity.rep"></span>
-                  <span class="suit" v-text="card.suit.rep"></span>
-              </li>
-            </template>
-            <template v-for="(card, index) in visibleWellCards" v-if="number == 13">
-                <!-- display if displayable(index)  -->
-                <li class="card back" :id="index">*</li>
-            </template>
-            <br class="emptyMin">
-          </draggable>
+                <br class="emptyMin">
+              </draggable>
+          </template>
     </div>
 </template>
 <style scoped>
@@ -51,11 +79,9 @@
         /*top:-10px;*/
     }
 
-
-        #container ul li.wellAlign:nth-child(1)  { left: 0;    top: 0; z-index: 599;}
-        #container ul li.wellAlign:nth-child(2)  { left: 0;    top: -109px; z-index: 600;}
-        #container ul li.wellAlign:nth-child(3)  { left: 0;    top:-218px; z-index: 601;}
-
+    #container ul li.wellAlign:nth-child(1)  { left: 0;    top: 0; z-index: 599;}
+    #container ul li.wellAlign:nth-child(2)  { left: 0;    top: -109px; z-index: 600;}
+    #container ul li.wellAlign:nth-child(3)  { left: 0;    top:-218px; z-index: 601;}
     #container ul li.deckAlign:nth-child(1)  { left: 0;    top: 0; z-index: 599;}
     #container ul li.deckAlign:nth-child(2)  { left: 0;    top: -85px; z-index: 600;}
     #container ul li.deckAlign:nth-child(3)  { left: 0;    top: -170px; z-index: 601;}
@@ -67,7 +93,6 @@
     #container ul li.deckAlign:nth-child(9)  { left: 0;    top: -680px; z-index: 607;}
     #container ul li.deckAlign:nth-child(10)  { left: 0;    top: -765px; z-index: 608;}
     #container ul li.deckAlign:nth-child(11)  { left: 0;    top: -850px; z-index: 609;}
-
     #container ul li:nth-child(1)  { left: 0;    top: 0; z-index: 599;}
     #container ul li:nth-child(2)  { left: 0;    top: -107px; z-index: 600;}
     #container ul li:nth-child(3)  { left: 0;    top: -214px; z-index: 601;}
@@ -84,7 +109,6 @@
     #container ul li:nth-child(14)  { left: 0;    top: -1391px; z-index: 609;}
     #container ul li:nth-child(15)  { left: 0;    top: -1498px; z-index: 609;}
     #container ul li:nth-child(16)  { left: 0;    top: -1605px; z-index: 609;}
-
 
     .emptyMin {
         line-height:200px;
@@ -105,13 +129,8 @@
               to: null,
               cardIndex: null,
               well: {
-                  currents:[],
+                  current:null,
               }
-            }
-        },
-        computed: {
-            wellHaveCards: function () {
-                return true
             }
         },
         components:{
@@ -119,34 +138,42 @@
         },
         props: ['cards','number'],
         methods: {
-            // showableWellCard: function ( index ) {
-            //     return (this.well.currents.length > 0) ? this.well.currents.map(function (c) { return { number: c.entity.number } }).filter(function (card) { return (this.cards[index].entity.number == card.number ) }) : true
-            // },
             onWellClick: function () {
-                // let x = this.cards
-                console.log(this)
-                let newCard = this.cards.pop()
-                console.log(newCard)
-                console.log('~~~~~~~~')
-                this.well.currents.push(newCard)
-                console.log(this.well.currents)
-                // var card = this.cards.pop()
-                // console.log(this.)
-                // this.well.currents.push(card)
-                // console.log(this.well.currents)
+                if(this.well.current == null){
+                    this.well.current = 0
+                    return
+                }
+                if(this.well.current == this.cards.length - 1){
+                    this.well.current = 0
+                    return
+                }
+                this.well.current += 1
+                return
+            },
+
+            pushNextCardToShowcase: function (index = 0) {
+                this.well.currents.push(index)
+            },
+
+            cleanCurrents: function () {
+
             },
             moveCard: function (event) {
                 window.Event.$emit('movement',this.generateMovementInstructions(event))
                 this.resetFromTo()
             },
             move: function (event) {
-                // console.log(event.dragged.id)
                 this.from = this.detectSpotNumber(event.from.id)
                 this.to = this.detectSpotNumber(event.to.id)
                 this.cardIndex = event.dragged.id
                 return false
             },
             generateMovementInstructions: function (event) {
+                console.log({
+                    index: this.cardIndex,
+                    from: this.from,
+                    to: this.to
+                })
                 return {
                     index: this.cardIndex,
                     from: this.from,
@@ -164,7 +191,12 @@
         },
         computed: {
             visibleWellCards: function () {
-                return this.cards.slice(this.well.currents.length)
+                var arr = []
+                if(this.well.current == null){
+                    return arr
+                }
+                arr.push(this.cards[this.well.current])
+                return arr
             }
         }
     }

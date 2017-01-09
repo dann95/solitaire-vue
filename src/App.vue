@@ -124,6 +124,7 @@
         isPossibleMovement: function (movement) {
             var rules = this.getRulesForSpot(movement.to.deck.number)
             rules = rules.map(function(r){ return r(movement) })
+            console.log(rules)
             return ! (rules.indexOf(false) > -1)
         },
         // get rules array of functions to specific Destination spot.
@@ -175,6 +176,9 @@
         },
         // Move cards from a spot to another
         makeMovement: function (movement) {
+            //is from 13?...
+
+            // it isnt from 13
             if(movement.from.isLastCard){
                 this.session.spots[movement.to.deck.number].push(movement.card)
                 this.session.spots[movement.from.deck.number].pop()
@@ -265,6 +269,9 @@
             for(var i = 5; i <= 12; i++){
               this.session.spots[i][(this.session.spots[i].length-1)].flipped = false
             }
+            this.session.spots[13].forEach(function (c) {
+                c.flipped = false
+            })
         },
         // add From and To spot arrays for apply rules.
         identifyMovement: function (m) {
