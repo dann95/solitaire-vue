@@ -130,6 +130,7 @@
               cardIndex: null,
               well: {
                   current:null,
+                  last:null
               }
             }
         },
@@ -141,12 +142,15 @@
             onWellClick: function () {
                 if(this.well.current == null){
                     this.well.current = 0
+                    this.well.last = 0
                     return
                 }
                 if(this.well.current == this.cards.length - 1){
                     this.well.current = 0
+                    this.well.last = 0
                     return
                 }
+                this.well.last = this.well.current
                 this.well.current += 1
                 return
             },

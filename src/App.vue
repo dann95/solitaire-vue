@@ -178,18 +178,29 @@
         makeMovement: function (movement) {
             //is from 13?...
 
-            // it isnt from 13
-            if(movement.from.isLastCard){
+            if(movement.from.deck.number == 13){
                 this.session.spots[movement.to.deck.number].push(movement.card)
-                this.session.spots[movement.from.deck.number].pop()
+                this.session.spots[13].splice(movement.from.cardIndex,1)
             }else{
-                var list = movement.from.deck.bag.slice(movement.from.cardIndex)
-                var that = this
-                list.forEach(function (card) {
-                    that.session.spots[movement.to.deck.number].push(card)
-                    that.session.spots[movement.from.deck.number].pop()
-                })
+
+                // it isnt from 13
+                if(movement.from.isLastCard){
+                    this.session.spots[movement.to.deck.number].push(movement.card)
+                    this.session.spots[movement.from.deck.number].pop()
+                }else{
+                    var list = movement.from.deck.bag.slice(movement.from.cardIndex)
+                    var that = this
+                    list.forEach(function (card) {
+                        that.session.spots[movement.to.deck.number].push(card)
+                        that.session.spots[movement.from.deck.number].pop()
+                    })
+                }
+
             }
+
+
+
+
             // increase movement Counter
             this.touchMovesCounter()
             // increase score
@@ -279,7 +290,7 @@
             var to = m.to
             return {
                 from: {
-                    isLastCard: (m.index == (this.session.spots[from].length - 1)),
+                    isLastCard: (from == 13) || (m.index == (this.session.spots[from].length - 1)),
                     cardIndex: m.index,
                     deck: {
                         number: from,
