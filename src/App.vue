@@ -198,9 +198,6 @@
 
             }
 
-
-
-
             // increase movement Counter
             this.touchMovesCounter()
             // increase score
@@ -251,6 +248,7 @@
             cards = this.randomizeCards(cards) // could be a nice idea have a pipe method to call.
             this.applyNewGame(cards)
             this.unflipCardsFromSpots()
+            window.Event.$emit('new-game', true)
         },
         // Set all spots to blank
         resetSpots: function () {

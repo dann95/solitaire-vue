@@ -123,6 +123,15 @@
     import draggable from 'vuedraggable'
 
     export default{
+        mounted(){
+            if(this.number == 13){
+                var that = this
+                window.Event.$on('new-game', function () {
+                    that.well.current = null
+                    that.well.last = null
+                })
+            }
+        },
         data(){
             return{
               from: null,
