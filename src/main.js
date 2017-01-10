@@ -3,10 +3,10 @@
 import Vue from 'vue'
 import App from './App'
 
-// set draggable plugin for vue.
-
+// Event broadcasting
 window.Event = new Vue()
 
+// App instance
 new Vue({
   el: '#app',
   template: '<App/>',
