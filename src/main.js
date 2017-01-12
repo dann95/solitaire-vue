@@ -4,7 +4,7 @@ import Vue from 'vue'
 import App from './App'
 
 // Event broadcasting
-window.Event = new Vue()
+window.Events = new Vue()
 
 // App instance
 new Vue({
