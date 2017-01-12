@@ -3,20 +3,20 @@
 </template>
 
 <script type="text/javascript">
-export default {
-    name: 'card',
-    data(){
-        return {
-            suits: {
-                spades: {},
-                hearts: {},
-                diams: {},
-                clubs: {}
+    export default {
+        name: 'card',
+        data(){
+            return {
+                suits: {
+                    spades: {},
+                    hearts: {},
+                    diams: {},
+                    clubs: {}
+                }
             }
-        }
-    },
-    props: ['suit','rep','flipped']
-}
+        },
+        props: ['suit','rep','flipped']
+    }
 </script>
 
 <style lang="css">
